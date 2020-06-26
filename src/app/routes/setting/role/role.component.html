@@ -1,0 +1,16 @@
+<!-- <button nz-button (click)="st.reset()">重置</button> -->
+<!-- <st #st [data]="url" [req]="req" [scroll]="scroll" [res]="res" [columns]="columns"></st> -->
+<app-crud (change)="crudChange($event)" #crud [columns]="columns" [data]="url" [event]="event">
+  <ng-template crud-top-button>
+    <button nz-button nzType="primary"><i nz-icon nzType="menu" nzTheme="outline"></i>分配菜单</button>
+  </ng-template>
+
+  <!-- <ng-template crud-row="roles" let-item>
+    <ng-container *ngFor="let role of item.roles">
+      <nz-tag [nzColor]="'geekblue'">{{role.name}}</nz-tag>
+    </ng-container>
+  </ng-template>
+  <ng-template crud-title="roles" let-item let-index="index">
+    <button nz-button nzType="primary"><i nz-icon nzType="usergroup-add" nzTheme="outline"></i>指定角色</button>
+  </ng-template> -->
+</app-crud>
