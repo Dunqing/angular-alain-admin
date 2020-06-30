@@ -10,10 +10,11 @@
 基于ng-alain实现的rbac权限模型后台，后端使用nest、mongodb、redis开发
 </div>
 
-# 预览地址 https://www.baidu.com
+# 预览地址 https://1247748612.github.io/angular-alain-admin/#
 
 ## 后端
-- [angular-nest]()
+- [地址](https://github.com/1247748612/angular-nestjs-admin)
+- [swaggerApi文档](http://49.232.194.85:4221/api-doc)
 
 ## 快速运行
 ```
