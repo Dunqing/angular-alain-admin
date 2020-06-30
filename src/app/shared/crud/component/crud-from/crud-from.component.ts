@@ -35,6 +35,9 @@ export class CrudFromComponent implements OnInit, AfterViewInit {
   @Input() event: (value: any, close: any) => void;
   @ViewChild(SFComponent) sf: SFComponent;
   ngOnInit(): void {
+    if (!this.value) {
+      return;
+    }
     const propKeys = Object.keys(this.schema.properties);
     propKeys.forEach((key) => (this._formData[key] = this.value[key]));
   }

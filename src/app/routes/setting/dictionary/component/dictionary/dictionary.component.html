@@ -1,0 +1,5 @@
+<app-crud #crud [columns]="columns" [data]="url" [event]="event" [usePagination]="usePagination" [formData]="formData">
+  <ng-template crud-row="typeName" let-column>
+    {{ dictionaryType.name }}
+  </ng-template>
+</app-crud>

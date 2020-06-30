@@ -19,6 +19,7 @@ const alainConfig: AlainConfig = {
   auth: {
     store_key: 'DENGQING_TOKEN_KEY',
     login_url: '/passport/login',
+    ignores: [/user\/login/],
   },
 };
 

@@ -30,6 +30,36 @@ export class StartupService {
     iconSrv.addIcon(...ICONS_AUTO, ...ICONS);
   }
 
+  handleMenus(menuList: any[]) {
+    function handle(menus, index: number) {
+      return menus.map((item) => {
+        let children = [];
+        if (item.children && item.children.length) {
+          if (item.children[0].type !== 3) {
+            children = JSON.parse(JSON.stringify(item.children));
+          }
+        }
+        Reflect.deleteProperty(item, 'children');
+        let icon = {};
+        if (index > 1) {
+          Reflect.deleteProperty(item, 'icon');
+        } else {
+          icon = { icon: { type: 'icon', value: item.icon } };
+          Reflect.deleteProperty(item, 'icon');
+        }
+        // console.log(meta?.title, children);
+        return {
+          ...item,
+          ...icon,
+          group: item.type === 2,
+          // icon: item.type === 0 ? { type: 'icon', value: item.icon } : undefined,
+          children: children.length ? handle(children, index + 1) : undefined,
+        };
+      });
+    }
+    return handle(menuList, 0);
+  }
+
   private viaHttp(resolve: any, reject: any) {
     const menus: Menu[] = [
       {
@@ -39,7 +69,7 @@ export class StartupService {
           {
             text: 'Dashboard',
             link: '/dashboard',
-            icon: { type: 'icon', value: 'appstore' },
+            icon: 'appstore',
           },
           {
             text: '系统设置',
@@ -109,13 +139,17 @@ export class StartupService {
           });
           // User information: including name, avatar, email address
           this.settingService.setUser({
-            ...userInfo,
+            ...userInfo.data,
             name: userInfo.data.nickname,
           });
           // ACL: Set the permissions to full, https://ng-alain.com/acl/getting-started
-          this.aclService.setFull(true);
-          // Menu data, https://ng-alain.com/theme/menu
-          this.menuService.add(menus);
+          // this.aclService.setFull(true);
+          this.aclService.set({ ability: userInfo.data.permissionIdentifierList }); // Menu data, https://ng-alain.com/theme/menu
+          this.aclService.attachAbility([undefined, null]);
+          console.log(this.aclService.data, 'aclSe;rvice');
+          // this.menuService.add(menus);
+          // this.menuService.add(userMenu.data);
+          this.menuService.add(this.handleMenus(userMenu.data));
           // Can be set page suffix title, https://ng-alain.com/theme/title
           this.titleService.suffix = 'Admin';
         },

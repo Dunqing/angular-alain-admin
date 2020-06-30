@@ -21,6 +21,7 @@ export class CrudService {
   baseUrl: any;
   _data: any; // 临时data 比如保存打开编辑框时
   _event: any; // set get event
+  _formData: any = {}; // 默认form表单字段
   schema: SFSchema = {
     properties: {},
     ui: {
@@ -40,6 +41,9 @@ export class CrudService {
   };
 
   get tableActionIif() {
+    if (this.tableAction.buttons.length !== 2) {
+      return true;
+    }
     return this.event && (this.event.add || this.event.edit || this.baseUrl);
   }
 
@@ -73,23 +77,27 @@ export class CrudService {
     width: 150,
     fromHidden: false,
     iif: () => {
+      // console.log(this.tableActionIif, '操作');
       return this.tableActionIif;
     },
     buttons: [
       {
         text: '编辑',
         icon: 'edit',
+        prefix: 'edit',
         iif: () => {
           return this.event.edit !== false && this.editIif;
         },
-        click: (cdr) => {
-          this._data = cdr;
-          this.openModelForm('edit', cdr);
+        click: (record) => {
+          this._data = record;
+          this.openModelForm('edit', record);
         },
       },
       {
         text: '删除',
         icon: 'delete',
+        type: 'del',
+        prefix: 'del',
         iif: () => {
           return this.event.del !== false && this.delIif;
         },
@@ -100,17 +108,7 @@ export class CrudService {
             this.handleDelete(args);
             return;
           }
-          this.modalService.confirm({
-            nzTitle: '确认删除？',
-            nzContent: `<b style="color: red;">删除后无法恢复！请确认</b>`,
-            nzOkText: '删除',
-            nzOkType: 'danger',
-            nzCancelText: '取消',
-            nzOnOk: () => {
-              this.handleDelete(args);
-            },
-            nzOnCancel: () => console.log('Cancel'),
-          });
+          this.handleDelete(args);
         },
       },
     ],
@@ -124,7 +122,7 @@ export class CrudService {
     const req = {
       url: options.url || this.baseUrl,
       method: options.method || defaultMethod,
-      data: options.reData ? options.reData(args) : args,
+      data: options.reData ? options.reData({ columnData: this._data, fromData: args }) : args,
       // reReq 传过去的数据为 打开模态框时的data 和 保存数据传过来的data
       ...(options.reReq ? options.reReq({ columnData: this._data, fromData: args }) : {}),
     };
@@ -135,18 +133,15 @@ export class CrudService {
     // 没有为默认对象
     const _add = this.event.add || {};
     const useCustomHttp = _add instanceof Function ? true : false;
-    console.log('add', _add, useCustomHttp);
     if (useCustomHttp) {
       // _data 点击编辑时的该行数据
-      _add(this._data, args, loading);
+      _add(args, loading);
       return;
     }
     // 默认请求方式
     const method = 'post';
     const req = this.getReqOptions(_add, method, args);
     const options = { ...this.event.options, ..._add.options };
-    console.log('add', _add, req, this);
-    console.log('add', req, options);
     this.customHttp(req, {
       ...options,
       loading,
@@ -285,6 +280,20 @@ export class CrudService {
         ...column.schema, // 可覆盖上面
       };
 
+      if (column.schema) {
+        console.log(column.schema, 'readOnly', Reflect.has(column.schema, 'addReadOnly'));
+        if (Reflect.has(column.schema, 'readOnly')) {
+          schema.properties[key].readOnly = column.schema.readOnly;
+        } else {
+          if (mode === 'edit' && Reflect.has(column.schema, 'editReadOnly')) {
+            schema.properties[key].readOnly = column.schema.editReadOnly;
+          } else if (mode === 'add' && Reflect.has(column.schema, 'addReadOnly')) {
+            schema.properties[key].readOnly = column.schema.addReadOnly;
+          }
+        }
+        console.log(schema.properties[key], 'rado');
+      }
+
       // schema -> ui 默认值
       const schemaUi: any = schema.properties[key].ui;
       schema.properties[key].ui = { ...this.defaultSchemaUi, ...schemaUi };
@@ -330,7 +339,23 @@ export class CrudService {
         },
       });
     });
-    newColumns.push(this.tableAction);
+    console.log(this.event);
+    const tableAction = {
+      ...this.tableAction,
+      buttons: this.tableAction.buttons.map((button) => {
+        const ability = this.event[button.prefix + 'Ability'];
+        return {
+          ...button,
+          acl: ability
+            ? {
+                ability: [ability],
+              }
+            : null,
+        };
+      }),
+    };
+    console.log(tableAction, 'acl tableAction');
+    newColumns.push(tableAction);
     this.columns = columns;
     return {
       columns: newColumns,

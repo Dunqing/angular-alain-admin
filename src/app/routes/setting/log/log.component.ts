@@ -1,7 +1,8 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
-import { STColumn, STComponent, STData, STPage, STRes } from '@delon/abc/st';
+import { STColumn, STColumnFilterMenu, STComponent, STData, STPage, STRes } from '@delon/abc/st';
 import { NzMessageService } from 'ng-zorro-antd/message';
 import { NzModalService } from 'ng-zorro-antd/modal';
+import { CrudColumn } from 'src/app/shared/crud/interface/crud.interface';
 import { CrudComponent } from '../../../shared/crud/crud.component';
 import { LogService } from './log.service';
 
@@ -15,7 +16,7 @@ export class LogComponent {
   @ViewChild('crud') crud: CrudComponent;
   url = `/logging/pagination`;
 
-  columns: STColumn[] = [
+  columns: CrudColumn[] = [
     {
       title: '_id',
       index: '_id',
@@ -24,11 +25,27 @@ export class LogComponent {
     {
       title: '标题',
       index: 'title',
+      filter: {
+        type: 'keyword',
+        reName: (list: STColumnFilterMenu[], column: STColumn) => {
+          return {
+            search: 'title,url',
+            title: list[0].value,
+          };
+        },
+      },
     },
     {
       type: 'badge',
       title: '类型',
       index: 'type',
+      filter: {
+        multiple: false,
+        menus: [
+          { text: '正常', value: 0 },
+          { text: '异常', value: 1 },
+        ],
+      },
       badge: {
         0: {
           text: '正常',
@@ -43,6 +60,15 @@ export class LogComponent {
     {
       title: '访问地址',
       index: 'url',
+      filter: {
+        type: 'keyword',
+        reName: (list: STColumnFilterMenu[], column: any) => {
+          return {
+            search: 'title,url',
+            url: list[0].value,
+          };
+        },
+      },
     },
     {
       title: '访问ip',
@@ -56,6 +82,16 @@ export class LogComponent {
       title: '请求方式',
       index: 'method',
       type: 'tag',
+      filter: {
+        multiple: true,
+        menus: [
+          { text: 'GET', value: 'GET' },
+          { text: 'POST', value: 'POST' },
+          { text: 'DELETE', value: 'DELETE' },
+          { text: 'PUT', value: 'PUT' },
+          { text: 'PATCH', value: 'PATCH' },
+        ],
+      },
       tag: {
         // * - 预设：geekblue,blue,purple,success,red,volcano,orange,gold,lime,green,cyan
         GET: {

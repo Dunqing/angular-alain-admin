@@ -14,6 +14,8 @@ import {
 } from '@angular/core';
 import { TemplateRef, ViewContainerRef } from '@angular/core';
 import { STChange, STColumn, STComponent, STData, STPage, STReq, STRes } from '@delon/abc/st';
+import { SFSchema } from '@delon/form';
+import { deepMerge } from '@delon/util/src/other';
 import { NzMessageService } from 'ng-zorro-antd/message';
 import { NzModalService } from 'ng-zorro-antd/modal';
 import { TransferItem } from 'ng-zorro-antd/transfer';
@@ -44,13 +46,49 @@ export class CrudComponent implements AfterViewInit, OnInit, OnChanges {
     private messageService: NzMessageService,
     private crudTopButton: CrudTopButtonTemplateRef,
     private viewContainer: ViewContainerRef,
-    private cdr: ChangeDetectorRef,
   ) {}
   _columns: STColumn[];
   _checkbox: any[]; // checkbox点击数据暂存
   _radio: any; // radio点击数据暂存
   _stChangeType: string; // 暂存 radio 和 checkbox
+  _formData = {}; // 默认form表单数据 由使用者传入
   @Output('change') crudChange = new EventEmitter();
+  @Input()
+  set formData(formData: any) {
+    this._formData = formData || {};
+    this.crudService._formData = formData || {};
+  }
+  get formData() {
+    return this._formData;
+  }
+
+  @Input()
+  set tableAction(data) {
+    if (!data) {
+      return;
+    }
+    this.crudService.tableAction = {
+      ...this.crudService.tableAction,
+      ...data,
+      buttons: [...this.crudService.tableAction.buttons, ...data.buttons],
+    };
+    console.log(this.crudService.tableAction, 'tableAction');
+    this.crudService.columnsInit(this.columns);
+  }
+
+  @Input() scroll = {
+    x: '100vw',
+    y: '70vh',
+  };
+
+  @Input()
+  set schema(schema: any) {
+    this.crudService.schema = {
+      ...this.crudService.schema,
+      ...schema,
+    };
+    // this.crudService.schema = {}
+  }
   @Input()
   set columns(columns) {
     this._columns = columns;
@@ -101,17 +139,14 @@ export class CrudComponent implements AfterViewInit, OnInit, OnChanges {
   }
 
   total = 0;
+  loadingDelay: 500;
   page: STPage = {
     front: false,
     show: true,
-    showSize: true,
     showQuickJumper: true,
     placement: 'center',
   };
-  scroll = {
-    x: '100vw',
-    y: '70vh',
-  };
+
   req: STReq = {
     reName: {
       pi: 'page',
@@ -121,7 +156,9 @@ export class CrudComponent implements AfterViewInit, OnInit, OnChanges {
 
   res: STRes = {
     process: (data: STData[], rowData?: any) => {
-      console.log(data);
+      if (typeof this.data === 'object') {
+        return rowData;
+      }
       this.total = this.usePagination ? rowData.data.pagination.total : 0;
       return this.usePagination ? rowData.data.data : rowData.data;
     },
@@ -131,9 +168,9 @@ export class CrudComponent implements AfterViewInit, OnInit, OnChanges {
   transferDataSource: TransferItem[] = [];
 
   ngOnChanges({ columns }: SimpleChanges): void {
-    if (columns.currentValue) {
+    if (columns && columns.currentValue) {
       const data = this.crudService.changeColumns(columns.currentValue);
-      // console.log(data);
+      console.log(columns.currentValue, data, '有无更新');
       this.columns = data.columns;
       this.transferDataSource = data.transferData;
     }
@@ -154,43 +191,43 @@ export class CrudComponent implements AfterViewInit, OnInit, OnChanges {
     // console.log(ret, 'change事件');
   }
 
-  check(args) {
-    if (args) {
-      this.viewContainer.createEmbeddedView(args);
-      console.log(args, 'check');
-    }
-  }
-
-  topEditBtn(mode: string) {
+  get topEditBtnDisabled() {
     if (this._stChangeType === 'radio') {
       if (!this._radio) {
-        this.messageService.error('你还没选择数据！请先选好');
-        return;
+        return true;
       }
-      this.crudService._data = this._radio;
     } else if (this._stChangeType === 'checkbox') {
       const checkboxData = this._checkbox;
       if (checkboxData.length !== 1) {
-        this.messageService.error(checkboxData.length > 1 ? '编辑只能选择一个数据' : '请先选择一个数据');
-        return;
+        return true;
       }
-      this.crudService._data = this._checkbox;
     } else {
-      this.messageService.error('还未选择数据请先选择');
-      return;
+      return true;
     }
-    this.crudService.openModelForm(mode, this.crudService._data[0]);
+    return false;
+  }
+
+  topEditBtn(mode: string) {
+    const checkboxData = this._checkbox;
+    if (this._stChangeType === 'radio') {
+      this.crudService._data = this._radio;
+    } else if (this._stChangeType === 'checkbox') {
+      this.crudService._data = checkboxData[0];
+    }
+    this.crudService.openModelForm(mode, checkboxData[0]);
+  }
+
+  get topDelBtnDisabled() {
+    if (!this._stChangeType) {
+      return true;
+    }
+    if ((this._stChangeType === 'checkbox' && !this._checkbox.length) || (this._stChangeType === 'radio' && !this._radio)) {
+      return true;
+    }
+    return false;
   }
 
   topDelBtn() {
-    if (!this._stChangeType) {
-      this.messageService.error('还未选择数据请先选择');
-      return;
-    }
-    if ((this._stChangeType === 'checkbox' && !this._checkbox.length) || (this._stChangeType === 'radio' && !this._radio)) {
-      this.messageService.error('你还未选择要删除的数据, 请先选好');
-      return;
-    }
     this.modalService.confirm({
       nzTitle: '确认删除？',
       nzContent: `<b style="color: red;">你是否确定要删除勾选的全部数据？</b>`,
@@ -206,10 +243,12 @@ export class CrudComponent implements AfterViewInit, OnInit, OnChanges {
 
   // 打开crud模态框
   topAddBtn(mode: string) {
-    this.crudService.openModelForm(mode);
+    console.log(this.formData);
+    this.crudService.openModelForm(mode, this.formData);
   }
 
   ngOnInit(): void {
+    console.log(this.data, 'init');
     this.columns = this.crudService.columnsInit(this.columns);
   }
 

@@ -1,16 +1,17 @@
-import { AfterViewInit, Component, ElementRef, OnInit, ViewChild, ViewContainerRef } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, OnInit, ViewChild, ViewContainerRef, ViewEncapsulation } from '@angular/core';
 import { STColumn, STComponent } from '@delon/abc/st';
 import { SFSchema, SFUploadWidgetSchema } from '@delon/form';
 import { ModalHelper } from '@delon/theme';
 import { NzMessageService } from 'ng-zorro-antd/message';
 import { ModalOptions } from 'ng-zorro-antd/modal';
 import { CrudComponent } from '../../../shared/crud/crud.component';
+import { CrudColumn, CrudEventOptions } from '../../../shared/crud/interface/crud.interface';
 import { DesignatedRoleComponent } from './components/designated-role.component';
 
 @Component({
   selector: 'app-user',
   templateUrl: './user.component.html',
-  styles: [],
+  styles: [``],
 })
 export class UserComponent implements AfterViewInit {
   constructor(private el: ElementRef, private modal: ModalHelper, private messageService: NzMessageService) {
@@ -20,8 +21,11 @@ export class UserComponent implements AfterViewInit {
 
   url = `/user/pagination`;
 
-  event = {
+  event: CrudEventOptions = {
     url: '/user',
+    addAbility: 'user_add',
+    editAbility: 'user_edit',
+    delAbility: 'user_del',
     options: {
       successCallback: () => {
         this.crud.load();
@@ -42,7 +46,7 @@ export class UserComponent implements AfterViewInit {
       },
     },
     del: {
-      reData(data: any) {
+      reData({ fromData: data }) {
         console.log(data);
         const userIds = [];
         if (data instanceof Array) {
@@ -54,11 +58,10 @@ export class UserComponent implements AfterViewInit {
           userIds,
         };
       },
-      confirmOptions: {} as ModalOptions,
     },
   };
 
-  columns: STColumn[] = [
+  columns: CrudColumn[] = [
     { title: '编号', type: 'checkbox', width: 60, fixed: 'left', fromHidden: true },
     { title: '_id', index: '_id', fromHidden: true, show: false },
     { title: '创建者id', index: 'creatorId', fromHidden: true, show: false },
@@ -141,11 +144,6 @@ export class UserComponent implements AfterViewInit {
   ];
 
   designatedRole(args) {
-    console.log(args);
-    if (args.changeType !== 'checkbox' || args.checkbox.length !== 1) {
-      this.messageService.error('还未选择数据请先选择, (只能单独修改用户角色，只勾选一个)');
-      return;
-    }
     this.modal
       .open(
         DesignatedRoleComponent,
@@ -161,7 +159,6 @@ export class UserComponent implements AfterViewInit {
         if (res) {
           this.crud.load();
         }
-        console.log(res, 'modal');
       });
   }
 

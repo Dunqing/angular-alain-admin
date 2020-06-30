@@ -1,1 +1,3 @@
-<p>menu works!</p>
+<app-crud [usePagination]="usePagination" (change)="crudChange($event)" #crud [columns]="columns" [formData]="formData"
+  [tableAction]="tableAction" [scroll]="scroll" [data]="url" [event]="event" [schema]="schema">
+</app-crud>

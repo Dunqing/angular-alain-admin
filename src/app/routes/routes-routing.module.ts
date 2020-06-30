@@ -1,5 +1,6 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
+import { ACLGuard } from '@delon/acl';
 import { SimpleGuard } from '@delon/auth';
 import { environment } from '@env/environment';
 // layout
@@ -25,7 +26,16 @@ const routes: Routes = [
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
       { path: 'dashboard', component: DashboardComponent, data: { title: '仪表盘', titleI18n: 'dashboard' } },
       { path: 'exception', loadChildren: () => import('./exception/exception.module').then((m) => m.ExceptionModule) },
-      { path: 'setting', loadChildren: () => import('./setting/setting.module').then((m) => m.SettingModule) },
+      {
+        path: 'setting',
+        data: {
+          guard: {
+            ability: ['setting_read'],
+          },
+        },
+        canActivate: [ACLGuard],
+        loadChildren: () => import('./setting/setting.module').then((m) => m.SettingModule),
+      },
       // 业务子模块
       // { path: 'widgets', loadChildren: () => import('./widgets/widgets.module').then(m => m.WidgetsModule) },
     ],

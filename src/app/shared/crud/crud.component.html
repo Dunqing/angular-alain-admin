@@ -1,12 +1,12 @@
 <div class="header-wrapper d-flex justify-content-around rounded-lg py-md px-sm bg-white border">
   <div class="left d-flex justify-content-start flex-1">
     <ng-container *ngIf="event">
-      <button *ngIf="addIif" (click)="topAddBtn('add')" nz-button nzType="primary"><i nz-icon
-          nzType="plus"></i>新增</button>
-      <button *ngIf="editIif" (click)="topEditBtn('edit')" nz-button nzType="primary" nzGhost><i nz-icon
-          nzType="edit"></i>编辑</button>
-      <button *ngIf="delIif" (click)="topDelBtn()" nz-button nzType="primary" nzDanger><i nz-icon
-          nzType="delete"></i>删除</button>
+      <button *ngIf="addIif" (click)="topAddBtn('add')" acl [acl-ability]="event.addAbility" nz-button
+        nzType="primary"><i nz-icon nzType="plus"></i>新增</button>
+      <button [disabled]="topEditBtnDisabled" *ngIf="editIif" (click)="topEditBtn('edit')" acl
+        [acl-ability]="event.editAbility" nz-button nzType="primary" nzGhost><i nz-icon nzType="edit"></i>编辑</button>
+      <button [disabled]="topDelBtnDisabled" *ngIf="delIif" (click)="topDelBtn()" acl [acl-ability]="event.delAbility"
+        nz-button nzType="primary" nzDanger><i nz-icon nzType="delete"></i>删除</button>
     </ng-container>
     <ng-template *ngFor="let button of topButtons" [ngTemplateOutlet]="button"
       [ngTemplateOutletContext]="{ $implicit: topButtonsContext}"></ng-template>
@@ -20,7 +20,7 @@
           <button nz-button nzType="primary" nzDanger (click)="st.clear()">数据</button>
         </li>
         <li nz-menu-item>
-          <button nz-button nzType="primary" nzDanger (click)="st.clearStatus()">所有状态</button>
+          <button nz-button nzType="primary" nzDanger (click)="st.clearStatus();load()">所有状态</button>
         </li>
         <li nz-menu-item>
           <button nz-button nzType="primary" nzDanger (click)="st.clearCheck()">多选按钮</button>
@@ -39,8 +39,8 @@
     </nz-transfer>
   </nz-drawer>
 </div>
-<st #st [data]="data" (change)="stChange($event)" [columns]="columns" [req]="req" [res]="res" [page]="page"
-  [total]="total" [scroll]="scroll">
+<st #st [loadingDelay]="loadingDelay" [data]="data" (change)="stChange($event)" [columns]="columns" [req]="req"
+  [res]="res" [page]="page" [total]="total" [scroll]="scroll">
   <ng-container *ngFor="let column of columns">
     <ng-container *ngIf="column.__render">
       <ng-template [st-row]="column.render" let-item let-index="index" let-c="column">

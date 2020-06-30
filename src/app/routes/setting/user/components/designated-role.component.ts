@@ -5,7 +5,7 @@ import { NzModalRef } from 'ng-zorro-antd/modal';
 import { DesignatedRoleService } from './desingated-role.service';
 
 @Component({
-  selector: 'user-designated-role',
+  selector: 'app-user-designated-role',
   template: `
     <!-- <div class="modal-header">
       <div class="modal-title">指定角色</div>

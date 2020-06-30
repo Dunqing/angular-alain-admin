@@ -1,9 +1,10 @@
 <!-- <button nz-button (click)="st.reset()">重置</button> -->
 <!-- <st #st [data]="url" [req]="req" [scroll]="scroll" [res]="res" [columns]="columns"></st> -->
-<app-crud (change)="crudChange($event)" #crud [columns]="columns" [data]="url" [event]="event">
+<app-crud (change)="crudChange($event)" #crud [columns]="columns" [data]="url" [event]="{}" [usePagination]="false"
+  [tableAction]="tableAction">
   <ng-template crud-top-button let-args>
-    <button (click)="designatedRole(args)" [disabled]="args.checkbox && args.checkbox.length === 1 ? false : true"
-      nz-button nzType="primary"><i nz-icon nzType="usergroup-add" nzTheme="outline"></i>指定角色</button>
+    <button acl [acl-ability]="'user_online_out'" (click)="outOnlineUser(args)" nzDanger nz-button nzType="primary"><i
+        nz-icon nzType="user" nzTheme="outline"></i>踢出用户</button>
   </ng-template>
 
   <ng-template crud-row="roles" let-item>

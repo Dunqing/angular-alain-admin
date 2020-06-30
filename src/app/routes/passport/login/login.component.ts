@@ -31,8 +31,10 @@ export class UserLoginComponent implements OnDestroy {
     public msg: NzMessageService,
   ) {
     this.form = fb.group({
-      username: ['super_admin', [Validators.required, Validators.pattern(/^(super_admin|admin)$/)]],
-      password: ['123456', [Validators.required, Validators.pattern(/^(123456)$/)]],
+      username: ['super_admin', [Validators.required]],
+      password: ['123456', [Validators.required]],
+      // username: ['super_admin', [Validators.required, Validators.pattern(/^(super_admin|admin)$/)]],
+      // password: ['123456', [Validators.required, Validators.pattern(/^(123456)$/)]],
       mobile: [null, [Validators.required, Validators.pattern(/^1\d{10}$/)]],
       captcha: [null, [Validators.required]],
       remember: [true],
@@ -124,7 +126,7 @@ export class UserLoginComponent implements OnDestroy {
         this.reuseTabService.clear();
         // 设置用户Token信息
         this.tokenService.set({
-          token: res.data.accessToken
+          token: res.data.accessToken,
         });
         // 重新获取 StartupService 内容，我们始终认为应用信息一般都会受当前用户授权范围而影响
         this.startupSrv.load().then(() => {

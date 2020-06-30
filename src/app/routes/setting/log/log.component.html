@@ -1,6 +1,6 @@
 <app-crud #crud [columns]="columns" [data]="url">
   <ng-template crud-top-button>
-    <button (click)="deleteAllLog()" nz-button nzType="primary" nzDanger><i nz-icon nzType="delete"
-        nzTheme="outline"></i>删除全部日志</button>
+    <button acl [acl-ability]="'logging_del'" (click)="deleteAllLog()" nz-button nzType="primary" nzDanger><i nz-icon
+        nzType="delete" nzTheme="outline"></i>删除全部日志</button>
   </ng-template>
 </app-crud>
