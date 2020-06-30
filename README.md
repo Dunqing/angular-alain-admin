@@ -15,11 +15,17 @@
 ## 后端
 - [angular-nest]()
 
-## 快速入门
+## 快速运行
+```
+git clone git@github.com:1247748612/angular-alain-admin.git
 
-+ git clone 
+yarn install
 
-## 链接
+yarn start
+```
+> 注意：不启动后端项目 无法登录
+
+## ng-alain 链接
 
 + [Document](https://ng-alain.com) ([Surge Mirror](https://ng-alain-doc.surge.sh))
 + [@delon Source](https://github.com/ng-alain/delon)
