@@ -1,5 +1,5 @@
 export const environment = {
-  SERVER_URL: `http://49.232.194.85:4221/api`,
+  SERVER_URL: `https://api.dengqing.net/angular`,
   production: true,
   useHash: true,
   hmr: false,
