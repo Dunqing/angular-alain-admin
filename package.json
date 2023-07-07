@@ -75,7 +75,7 @@
     "lint-staged": "^10.2.4",
     "husky": "^4.2.3",
     "prettier": "^2.0.5",
-    "stylelint": "^13.3.1",
+    "stylelint": "^15.10.1",
     "stylelint-config-prettier": "^8.0.1",
     "stylelint-config-rational-order": "^0.1.2",
     "stylelint-config-standard": "^20.0.0",
